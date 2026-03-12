@@ -1,10 +1,10 @@
 package com.example.hrm.system.dtos.requestdto;
-
 import lombok.Data;
+
 import java.time.LocalDate;
 
 @Data
-public class EmployeeRequestDto {
+public class EmployeePatchDto {
     private String firstName;
     private String lastName;
     private String email;
@@ -12,7 +12,7 @@ public class EmployeeRequestDto {
     private LocalDate hireDate;
     private String status;
 
-    // IDs only — not String, not objects
+    // IDs for FK fields — null means don't update
     private Long departmentId;
     private Long designationId;
     private Long categoryId;
