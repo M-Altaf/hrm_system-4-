@@ -1,10 +1,13 @@
 package com.example.hrm.system.entity;
 
+
+
+import com.example.hrm.system.emums.AttendanceStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import jakarta.persistence.Id;
+
 @Data
 @Entity
 @Table(name = "attendances")
@@ -17,7 +20,11 @@ public class Attendance {
     private LocalDate date;
     private LocalTime checkIn;
     private LocalTime checkOut;
-    private String status;
+    private Double workingHours;        // auto calculated
+    private String lateReason;          // filled if LATE
+
+    @Enumerated(EnumType.STRING)
+    private AttendanceStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id", nullable = false)

@@ -1,10 +1,11 @@
 package com.example.hrm.system.entity;
 
+import com.example.hrm.system.emums.LeaveStatus;
+import com.example.hrm.system.emums.LeaveType;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import jakarta.persistence.Id;
 
 @Data
 @Entity
@@ -15,14 +16,26 @@ public class Leave {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String leaveType;
+    @Enumerated(EnumType.STRING)
+    private LeaveType leaveType;
+
     private LocalDate startDate;
     private LocalDate endDate;
     private Integer totalDays;
-    private String status;
+    private String reason;
+
+    @Enumerated(EnumType.STRING)
+    private LeaveStatus status;
+
     private LocalDateTime appliedDate;
+    private LocalDateTime updatedAt;
+    private String rejectionReason;     // filled when HR rejects
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approved_by")   // HR/Manager who approved
+    private User approvedBy;
 }
