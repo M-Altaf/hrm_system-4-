@@ -1,9 +1,10 @@
 package com.example.hrm.system.entity;
 
+
+import com.example.hrm.system.emums.AuditAction;
 import jakarta.persistence.*;
-        import lombok.Data;
+import lombok.Data;
 import java.time.LocalDateTime;
-import jakarta.persistence.Id;
 
 @Data
 @Entity
@@ -14,13 +15,17 @@ public class AuditLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String action;
-    private String entityName;
-    private Long entityId;
-    private String description;
+    @Enumerated(EnumType.STRING)
+    private AuditAction action;         // CREATE, UPDATE, DELETE etc
+
+    private String entityName;          // "Employee", "Leave", "Payroll"
+    private Long entityId;              // which record was affected
+    private String description;         // human readable description
+    private String performedByUsername; // who did it
+    private String ipAddress;           // from where
     private LocalDateTime timestamp;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "performed_by", nullable = false)
+    @JoinColumn(name = "performed_by")
     private User performedBy;
 }

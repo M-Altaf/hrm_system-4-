@@ -1,9 +1,11 @@
 package com.example.hrm.system.entity;
 
+
+import com.example.hrm.system.emums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.time.LocalDateTime;
-import jakarta.persistence.Id;
 
 @Data
 @Entity
@@ -21,8 +23,17 @@ public class Payroll {
     private Double deduction;
     private Double tax;
     private Double netSalary;
-    private String paymentStatus;
+    private Integer presentDays;        // from attendance
+    private Integer absentDays;         // from attendance
+    private Integer lateDays;           // from attendance
+    private Double perDaySalary;        // basicSalary / working days
+    private String notes;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
+
     private LocalDateTime generatedDate;
+    private LocalDateTime paidDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id", nullable = false)

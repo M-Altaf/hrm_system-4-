@@ -1,9 +1,11 @@
 package com.example.hrm.system.entity;
 
+
+import com.example.hrm.system.emums.NotificationStatus;
+import com.example.hrm.system.emums.NotificationType;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
-import jakarta.persistence.Id;
 
 @Data
 @Entity
@@ -16,12 +18,22 @@ public class Notification {
 
     private String title;
     private String message;
-    private String type;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    private NotificationType type;
+
+    @Enumerated(EnumType.STRING)
+    private NotificationStatus status;
+
     private LocalDateTime createdAt;
     private LocalDateTime sentAt;
+    private LocalDateTime readAt;       // when employee read it
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sent_by")       // HR/Admin who sent it
+    private User sentBy;
 }
