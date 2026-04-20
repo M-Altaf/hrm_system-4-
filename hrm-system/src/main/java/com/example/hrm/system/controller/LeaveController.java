@@ -22,7 +22,7 @@ public class LeaveController {
     }
 
     // POST /api/leaves — apply for leave
-    @PostMapping
+    @PostMapping("/apply")
     public ResponseEntity<LeaveResponseDto> applyLeave(
             @RequestBody LeaveRequestDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -30,7 +30,7 @@ public class LeaveController {
     }
 
     // GET /api/leaves — all leaves (ADMIN/HR)
-    @GetMapping
+    @GetMapping("/getAll")
     public ResponseEntity<List<LeaveResponseDto>> getAllLeaves() {
         return ResponseEntity.ok(leaveService.getAllLeaves());
     }

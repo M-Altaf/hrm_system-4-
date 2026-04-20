@@ -87,12 +87,11 @@ public class LeaveServiceImpl implements LeaveService {
         }
 
         // 5. Check leave balance (max 20 days per year per type)
-        long usedDays = leaveRepository
-                .countByEmployeeIdAndLeaveType(
-                        dto.getEmployeeId(),
-                        dto.getLeaveType().name());
+        long usedDays = leaveRepository.countByEmployeeIdAndLeaveType(
+                dto.getEmployeeId(),
+                dto.getLeaveType());
 
-        int maxDays = getMaxDaysForLeaveType(dto.getLeaveType().name());
+        int maxDays = getMaxDaysForLeaveType(String.valueOf(dto.getLeaveType()));
 
         if (usedDays + totalDays > maxDays) {
             throw new IllegalArgumentException(
@@ -194,8 +193,8 @@ public class LeaveServiceImpl implements LeaveService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<LeaveResponseDto> getPendingLeaves() {
-        return leaveRepository.findByStatus(LeaveStatus.PENDING.name())
+   public List<LeaveResponseDto> getPendingLeaves() {
+        return leaveRepository.findByStatus(LeaveStatus.PENDING)
                 .stream().map(this::mapToDto)
                 .collect(Collectors.toList());
     }
