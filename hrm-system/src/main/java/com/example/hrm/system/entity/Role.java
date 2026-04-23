@@ -10,9 +10,7 @@ import jakarta.persistence.Id;
 public class Role {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    public String name;
+    private String name;
     private String description;
 }

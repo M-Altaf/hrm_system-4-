@@ -1,30 +1,34 @@
 package com.example.hrm.system.entity;
 
-
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-@Data
 @Entity
 @Table(name = "users")
+@Data
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, nullable = false)
     private String username;
+
+    @Column(unique = true)
+    private String email;
+
+    @Column(nullable = false)
     private String password;
-    private  boolean enabled;
-    private LocalDateTime createAt;
 
-    // ── Foreign Keys ─────────────────────────────────────────────────
-
-    @ManyToOne(fetch = FetchType.LAZY)         // ← Role entity, FK to roles table
-    @JoinColumn(name = "role_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "role_id")
     private Role role;
-
+    @Column(updatable = false)
+    private LocalDateTime createAt;
+    private Boolean enabled = true;
 }

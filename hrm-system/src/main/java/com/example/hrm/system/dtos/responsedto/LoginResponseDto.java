@@ -1,3 +1,4 @@
+// ── LoginResponseDto.java ─────────────────────────────────────────
 package com.example.hrm.system.dtos.responsedto;
 
 import lombok.AllArgsConstructor;

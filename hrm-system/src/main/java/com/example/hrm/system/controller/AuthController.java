@@ -1,70 +1,95 @@
 package com.example.hrm.system.controller;
 
 import com.example.hrm.system.dtos.requestdto.LoginRequestDto;
-import com.example.hrm.system.dtos.requestdto.SignupRequest;
+import com.example.hrm.system.dtos.requestdto.SignupRequestDto;
 import com.example.hrm.system.dtos.responsedto.LoginResponseDto;
+import com.example.hrm.system.dtos.responsedto.SignupResponseDto;
 import com.example.hrm.system.entity.User;
-import com.example.hrm.system.repository.UserRepository;
+import com.example.hrm.system.security.CustomUserDetails;
 import com.example.hrm.system.security.JwtUtil;
-import com.example.hrm.system.security.UserRegistrationService;
+import com.example.hrm.system.services.UserService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
-    private final UserRegistrationService userRegistrationService;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     public AuthController(AuthenticationManager authenticationManager,
                           JwtUtil jwtUtil,
-                          UserRegistrationService userRegistrationService,
-                          UserRepository userRepository) {
+                          UserService userService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
-        this.userRegistrationService = userRegistrationService;
-        this.userRepository = userRepository;
+        this.userService = userService;
     }
 
-    // POST /auth/signup
-    @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody SignupRequest request) {
-        User savedUser = userRegistrationService.registerNewUser(
-                request.getUsername(),
-                request.getPassword(),
-                request.getRoleId()     // ← Long, not enum
-        );
-        return ResponseEntity.ok("User registered: "
-                + savedUser.getUsername()
-                + " | Role: " + savedUser.getRole().getName());
-    }
-
-    // POST /auth/login
+    // 🔐 LOGIN ONLY
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto request) {
-        authenticationManager.authenticate(
+    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto dto) {
+
+        Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
+                        dto.getUsername(),
+                        dto.getPassword()
                 )
         );
 
-        // Fetch role from DB to include in token
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow();
+        CustomUserDetails userDetails =
+                (CustomUserDetails) authentication.getPrincipal();
 
         String token = jwtUtil.generateToken(
-                user.getUsername(),
-                user.getRole().getName()
+                userDetails.getUserId(),
+                userDetails.getUsername(),
+                userDetails.getEmail(),
+                userDetails.getRole()
         );
 
-        return ResponseEntity.ok(new LoginResponseDto(
-                token
-        ));
+        return ResponseEntity.ok(
+                new LoginResponseDto(
+                        token
+                )
+        );
+    }
+
+    // 🆕 SIGNUP
+    @PostMapping("/signup")
+    public ResponseEntity<SignupResponseDto> signup(
+            @Valid @RequestBody SignupRequestDto signupRequest) {
+
+        try {
+            User user = userService.registerUser(signupRequest);
+
+            SignupResponseDto response = new SignupResponseDto(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getRole().getName(),
+                    "User registered successfully"
+            );
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+        } catch (RuntimeException e) {
+
+            SignupResponseDto error = new SignupResponseDto(
+
+                    null,
+                    null,
+                    null,
+                    null,
+                    e.getMessage()
+            );
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
     }
 }

@@ -1,12 +1,10 @@
 package com.example.hrm.system.controller;
 
-import com.example.hrm.system.dtos.requestdto.AttendanceRequestDto;
+import com.example.hrm.system.dtos.requestdto.*;
 import com.example.hrm.system.dtos.responsedto.AttendanceResponseDto;
-import com.example.hrm.system.dtos.updatedto.AttendanceCheckOutDto;
 import com.example.hrm.system.dtos.updatedto.AttendanceReportDto;
 import com.example.hrm.system.services.AttendanceService;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,7 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/attendance")
+@RequestMapping("/attendance")
 public class AttendanceController {
 
     private final AttendanceService attendanceService;
@@ -23,64 +21,70 @@ public class AttendanceController {
         this.attendanceService = attendanceService;
     }
 
-    // POST /api/attendance/checkin
-    @PostMapping("/checkin")
+    //  CHECK-IN
+    @PostMapping("/check-in")
     public ResponseEntity<AttendanceResponseDto> checkIn(
             @RequestBody AttendanceRequestDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
+
+        return ResponseEntity.status(201)
                 .body(attendanceService.checkIn(dto));
     }
 
-    // PUT /api/attendance/{id}/checkout
-    @PutMapping("/{id}/checkout")
+    //  CHECK-OUT
+    @PostMapping("/check-out")
     public ResponseEntity<AttendanceResponseDto> checkOut(
-            @PathVariable Long id,
             @RequestBody AttendanceCheckOutDto dto) {
-        return ResponseEntity.ok(attendanceService.checkOut(id, dto));
+
+        return ResponseEntity.ok(attendanceService.checkOut(dto));
     }
 
-    // GET /api/attendance/{id}
+    //  GET BY ID
     @GetMapping("/{id}")
-    public ResponseEntity<AttendanceResponseDto> getById(
-            @PathVariable Long id) {
+    public ResponseEntity<AttendanceResponseDto> getById(@PathVariable Long id) {
         return ResponseEntity.ok(attendanceService.getAttendanceById(id));
     }
 
-    // GET /api/attendance/employee/{employeeId}
+    //  GET BY EMPLOYEE
     @GetMapping("/employee/{employeeId}")
     public ResponseEntity<List<AttendanceResponseDto>> getByEmployee(
             @PathVariable Long employeeId) {
+
         return ResponseEntity.ok(
                 attendanceService.getAttendanceByEmployee(employeeId));
     }
 
-    // GET /api/attendance/date?date=2026-03-13
+    //  GET BY DATE
     @GetMapping("/date")
     public ResponseEntity<List<AttendanceResponseDto>> getByDate(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate date) {
-        return ResponseEntity.ok(attendanceService.getAttendanceByDate(date));
+            @RequestParam String date) {
+
+        return ResponseEntity.ok(
+                attendanceService.getAttendanceByDate(LocalDate.parse(date)));
     }
 
-    // GET /api/attendance/employee/{employeeId}/range?startDate=2026-03-01&endDate=2026-03-31
-    @GetMapping("/employee/{employeeId}/range")
-    public ResponseEntity<List<AttendanceResponseDto>> getByDateRange(
-            @PathVariable Long employeeId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate endDate) {
+    //  DATE RANGE
+    @GetMapping("/range")
+    public ResponseEntity<List<AttendanceResponseDto>> getByRange(
+            @RequestParam Long employeeId,
+            @RequestParam String start,
+            @RequestParam String end) {
+
         return ResponseEntity.ok(
                 attendanceService.getAttendanceByEmployeeAndDateRange(
-                        employeeId, startDate, endDate));
+                        employeeId,
+                        LocalDate.parse(start),
+                        LocalDate.parse(end)
+                )
+        );
     }
 
-    // GET /api/attendance/report/{employeeId}?month=3&year=2026
-    @GetMapping("/report/{employeeId}")
-    public ResponseEntity<AttendanceReportDto> getMonthlyReport(
-            @PathVariable Long employeeId,
+    //  MONTHLY REPORT
+    @GetMapping("/report")
+    public ResponseEntity<AttendanceReportDto> getReport(
+            @RequestParam Long employeeId,
             @RequestParam int month,
             @RequestParam int year) {
+
         return ResponseEntity.ok(
                 attendanceService.getMonthlyReport(employeeId, month, year));
     }
