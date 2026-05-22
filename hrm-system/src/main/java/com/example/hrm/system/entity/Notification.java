@@ -1,13 +1,18 @@
 package com.example.hrm.system.entity;
 
-
 import com.example.hrm.system.emums.NotificationStatus;
 import com.example.hrm.system.emums.NotificationType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "notifications")
 public class Notification {
@@ -27,13 +32,15 @@ public class Notification {
 
     private LocalDateTime createdAt;
     private LocalDateTime sentAt;
-    private LocalDateTime readAt;       // when employee read it
+    private LocalDateTime readAt;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sent_by")       // HR/Admin who sent it
+    @JoinColumn(name = "sent_by")
     private User sentBy;
 }

@@ -181,7 +181,7 @@ public class PayrollServiceImpl implements PayrollService {
 
     @Override
     public List<PayrollResponseDto> getUnpaidPayrolls() {
-        return payrollRepository.findByPaymentStatus(String.valueOf(PaymentStatus.PENDING))
+        return payrollRepository.findByPaymentStatus(PaymentStatus.PENDING)
                 .stream().map(this::mapToDto).collect(Collectors.toList());
     }
 
@@ -199,7 +199,7 @@ public class PayrollServiceImpl implements PayrollService {
         double tax = 0;
 
         if (annualSalary > TAX_SLAB_1_LIMIT)
-            tax += Math.min(annualSalary, TAX_SLAB_2_LIMIT) - TAX_SLAB_1_LIMIT * 0.05;
+            tax += (Math.min(annualSalary, TAX_SLAB_2_LIMIT) - TAX_SLAB_1_LIMIT) * 0.05;
 
         return tax / 12;
     }

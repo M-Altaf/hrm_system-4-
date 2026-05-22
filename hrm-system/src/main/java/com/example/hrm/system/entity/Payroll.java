@@ -1,13 +1,17 @@
 package com.example.hrm.system.entity;
 
-
 import com.example.hrm.system.emums.PaymentStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "payrolls")
 public class Payroll {
@@ -23,10 +27,10 @@ public class Payroll {
     private Double deduction;
     private Double tax;
     private Double netSalary;
-    private Integer presentDays;        // from attendance
-    private Integer absentDays;         // from attendance
-    private Integer lateDays;           // from attendance
-    private Double perDaySalary;        // basicSalary / working days
+    private Integer presentDays;
+    private Integer absentDays;
+    private Integer lateDays;
+    private Double perDaySalary;
     private String notes;
 
     @Enumerated(EnumType.STRING)
@@ -35,6 +39,7 @@ public class Payroll {
     private LocalDateTime generatedDate;
     private LocalDateTime paidDate;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;

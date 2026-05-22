@@ -1,5 +1,6 @@
 package com.example.hrm.system.repository;
 
+import com.example.hrm.system.emums.EmployeeStatus;
 import com.example.hrm.system.entity.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -15,5 +16,5 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findByDepartmentId(Long departmentId);         // get employees by department
     List<Employee> findByDesignationId(Long designationId);       // get employees by designation
     List<Employee> findByCategoryId(Long categoryId);             // get employees by category
-    List<Employee> findByStatus(String status);                   // get active/inactive employees
+    List<Employee> findByStatus(EmployeeStatus status);                // get active/inactive employees
 }

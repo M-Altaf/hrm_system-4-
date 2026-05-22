@@ -1,12 +1,17 @@
 package com.example.hrm.system.entity;
 
-
 import com.example.hrm.system.emums.AuditAction;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "audit_logs")
 public class AuditLog {
@@ -16,15 +21,16 @@ public class AuditLog {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    private AuditAction action;         // CREATE, UPDATE, DELETE etc
+    private AuditAction action;
 
-    private String entityName;          // "Employee", "Leave", "Payroll"
-    private Long entityId;              // which record was affected
-    private String description;         // human readable description
-    private String performedByUsername; // who did it
-    private String ipAddress;           // from where
+    private String entityName;
+    private Long entityId;
+    private String description;
+    private String performedByUsername;
+    private String ipAddress;
     private LocalDateTime timestamp;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "performed_by")
     private User performedBy;

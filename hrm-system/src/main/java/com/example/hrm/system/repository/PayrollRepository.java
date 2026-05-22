@@ -1,5 +1,6 @@
 package com.example.hrm.system.repository;
 
+import com.example.hrm.system.emums.PaymentStatus;
 import com.example.hrm.system.entity.Payroll;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -17,5 +18,5 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
                                               Integer month,
                                               Integer year);
     List<Payroll> findByMonthAndYear(Integer month, Integer year);        // all payrolls for a month
-    List<Payroll> findByPaymentStatus(String paymentStatus);              // PAID / UNPAID
+    List<Payroll> findByPaymentStatus(PaymentStatus status);            // PAID / UNPAID
 }

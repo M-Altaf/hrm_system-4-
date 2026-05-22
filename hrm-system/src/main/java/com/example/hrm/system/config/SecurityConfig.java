@@ -46,9 +46,8 @@ public class SecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider =
-                new DaoAuthenticationProvider(userDetailsService);
-
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
@@ -79,16 +78,17 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // ── EMPLOYEE ──────────────────────────────────────────
+                        // ── EMPLOYEE ──────────────────────────────────────────
                         .requestMatchers(HttpMethod.POST,
-                                "/api/employees/**").hasAnyRole("ADMIN", "HR")
+                                "/api/v1/employees/**").hasAnyRole("ADMIN", "HR")
                         .requestMatchers(HttpMethod.PUT,
-                                "/api/employees/**").hasAnyRole("ADMIN", "HR")
+                                "/api/v1/employees/**").hasAnyRole("ADMIN", "HR")
                         .requestMatchers(HttpMethod.PATCH,
-                                "/api/employees/**").hasAnyRole("ADMIN", "HR", "MANAGER")
+                                "/api/v1/employees/**").hasAnyRole("ADMIN", "HR", "MANAGER")
                         .requestMatchers(HttpMethod.DELETE,
-                                "/api/employees/**").hasRole("ADMIN")
+                                "/api/v1/employees/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET,
-                                "/api/employees/**").hasAnyRole("ADMIN", "HR", "MANAGER", "EMPLOYEE")
+                                "/api/v1/employees/**").hasAnyRole("ADMIN", "HR", "MANAGER", "EMPLOYEE")
 
                         // ── LEAVE ─────────────────────────────────────────────
                         .requestMatchers(HttpMethod.POST,

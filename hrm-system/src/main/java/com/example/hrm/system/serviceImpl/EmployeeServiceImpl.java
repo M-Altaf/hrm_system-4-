@@ -1,19 +1,24 @@
 package com.example.hrm.system.serviceImpl;
 
-import com.example.hrm.system.dtos.requestdto.EmployeeRequestDto;
 import com.example.hrm.system.dtos.requestdto.EmployeePatchDto;
+import com.example.hrm.system.dtos.requestdto.EmployeeRequestDto;
 import com.example.hrm.system.dtos.responsedto.EmployeeResponseDto;
+import com.example.hrm.system.emums.EmployeeStatus;
 import com.example.hrm.system.entity.Employee;
 import com.example.hrm.system.exeption.ResourceNotFoundException;
 import com.example.hrm.system.repository.*;
 import com.example.hrm.system.services.EmployeeService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
@@ -22,27 +27,19 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
 
-    public EmployeeServiceImpl(EmployeeRepository employeeRepository,
-                               DepartmentRepository departmentRepository,
-                               DesignationRepository designationRepository,
-                               CategoryRepository categoryRepository,
-                               UserRepository userRepository) {
-        this.employeeRepository = employeeRepository;
-        this.departmentRepository = departmentRepository;
-        this.designationRepository = designationRepository;
-        this.categoryRepository = categoryRepository;
-        this.userRepository = userRepository;
-    }
-
     // ── CREATE ───────────────────────────────────────────────────────
 
     @Override
     @Transactional
     public EmployeeResponseDto createEmployee(EmployeeRequestDto dto) {
+        log.info("Creating employee with email: {}", dto.getEmail());
+
         if (employeeRepository.existsByEmail(dto.getEmail())) {
             throw new IllegalArgumentException("Email already in use: " + dto.getEmail());
         }
-        return mapToDto(employeeRepository.save(mapToEntity(dto)));
+
+        Employee employee = mapToEntity(dto);
+        return mapToDto(employeeRepository.save(employee));
     }
 
     // ── GET ALL ──────────────────────────────────────────────────────
@@ -50,6 +47,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional(readOnly = true)
     public List<EmployeeResponseDto> getAllEmployees() {
+        log.info("Fetching all employees");
         return employeeRepository.findAll()
                 .stream()
                 .map(this::mapToDto)
@@ -61,18 +59,27 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional(readOnly = true)
     public EmployeeResponseDto getEmployeeById(Long id) {
+        log.info("Fetching employee with id: {}", id);
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
         return mapToDto(employee);
     }
 
-    // ── UPDATE (PUT) ─────────────────────────────────────────────────
+    // ── FULL UPDATE (PUT) ────────────────────────────────────────────
 
     @Override
     @Transactional
     public EmployeeResponseDto updateEmployee(Long id, EmployeeRequestDto dto) {
+        log.info("Updating employee with id: {}", id);
+
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
+
+        // Check email conflict only if email is being changed
+        if (!employee.getEmail().equals(dto.getEmail()) &&
+                employeeRepository.existsByEmail(dto.getEmail())) {
+            throw new IllegalArgumentException("Email already in use: " + dto.getEmail());
+        }
 
         employee.setFirstName(dto.getFirstName());
         employee.setLastName(dto.getLastName());
@@ -81,7 +88,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setHireDate(dto.getHireDate());
         employee.setStatus(dto.getStatus());
 
-        // Resolve and set FK entities
         employee.setDepartment(departmentRepository.findById(dto.getDepartmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Department not found: " + dto.getDepartmentId())));
 
@@ -97,15 +103,16 @@ public class EmployeeServiceImpl implements EmployeeService {
         return mapToDto(employeeRepository.save(employee));
     }
 
-    // ── PATCH (partial update) ───────────────────────────────────────
+    // ── PARTIAL UPDATE (PATCH) ───────────────────────────────────────
 
     @Override
     @Transactional
     public EmployeeResponseDto patchEmployee(Long id, EmployeePatchDto dto) {
+        log.info("Patching employee with id: {}", id);
+
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
 
-        // Only update fields that are NOT null
         if (dto.getFirstName() != null)  employee.setFirstName(dto.getFirstName());
         if (dto.getLastName() != null)   employee.setLastName(dto.getLastName());
         if (dto.getPhone() != null)      employee.setPhone(dto.getPhone());
@@ -113,7 +120,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (dto.getStatus() != null)     employee.setStatus(dto.getStatus());
 
         if (dto.getEmail() != null) {
-            if (employeeRepository.existsByEmail(dto.getEmail())) {
+            if (!employee.getEmail().equals(dto.getEmail()) &&
+                    employeeRepository.existsByEmail(dto.getEmail())) {
                 throw new IllegalArgumentException("Email already in use: " + dto.getEmail());
             }
             employee.setEmail(dto.getEmail());
@@ -147,13 +155,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional
     public void deleteEmployee(Long id) {
+        log.info("Deleting employee with id: {}", id);
         if (!employeeRepository.existsById(id)) {
             throw new ResourceNotFoundException("Employee not found with id: " + id);
         }
         employeeRepository.deleteById(id);
     }
 
-    // ── MAPPERS ──────────────────────────────────────────────────────
+    // ── MAPPER: DTO → ENTITY ─────────────────────────────────────────
 
     private Employee mapToEntity(EmployeeRequestDto dto) {
         Employee e = new Employee();
@@ -179,6 +188,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         return e;
     }
 
+    // ── MAPPER: ENTITY → DTO ─────────────────────────────────────────
+
     private EmployeeResponseDto mapToDto(Employee e) {
         EmployeeResponseDto dto = new EmployeeResponseDto();
         dto.setId(e.getId());
@@ -187,7 +198,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         dto.setEmail(e.getEmail());
         dto.setPhone(e.getPhone());
         dto.setHireDate(e.getHireDate());
-        dto.setStatus(e.getStatus());
+        dto.setStatus(e.getStatus() != null ? EmployeeStatus.valueOf(e.getStatus().name()) : null);
 
         dto.setDepartmentId(e.getDepartment().getId());
         dto.setDepartmentName(e.getDepartment().getName());

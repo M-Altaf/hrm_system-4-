@@ -5,60 +5,93 @@ import com.example.hrm.system.dtos.requestdto.EmployeePatchDto;
 import com.example.hrm.system.dtos.responsedto.EmployeeResponseDto;
 import com.example.hrm.system.services.EmployeeService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
-@RequestMapping("/api/employees")
+@RequestMapping("/api/v1/employees")
+@RequiredArgsConstructor
 public class EmployeeController {
 
     private final EmployeeService employeeService;
 
-    public EmployeeController(EmployeeService employeeService) {
-        this.employeeService = employeeService;
+    // ── CREATE ───────────────────────────────────────────────────────
+
+    @PostMapping
+    public ResponseEntity<EmployeeResponseDto> createEmployee(
+            @Valid @RequestBody EmployeeRequestDto dto) {
+
+        log.info("Creating new employee with email: {}", dto.getEmail());
+
+        EmployeeResponseDto created = employeeService.createEmployee(dto);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .header("Location", "/api/v1/employees/" + created.getId())
+                .body(created);
     }
 
-    // POST /api/employees
-    @PostMapping("/create_emp")
-    public ResponseEntity<EmployeeResponseDto> createEmployee(@Valid @RequestBody EmployeeRequestDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(employeeService.createEmployee(dto));
-    }
+    // ── GET ALL ──────────────────────────────────────────────────────
 
-    // GET /api/employees
-    @GetMapping("/getall")
+    @GetMapping
     public ResponseEntity<List<EmployeeResponseDto>> getAllEmployees() {
+
+        log.info("Fetching all employees");
+
         return ResponseEntity.ok(employeeService.getAllEmployees());
     }
 
-    // GET /api/employees/{id}
-    @GetMapping("/getby{id}")
-    public ResponseEntity<EmployeeResponseDto> getEmployeeById(@PathVariable Long id) {
+    // ── GET BY ID ────────────────────────────────────────────────────
+
+    @GetMapping("/{id}")
+    public ResponseEntity<EmployeeResponseDto> getEmployeeById(
+            @PathVariable Long id) {
+
+        log.info("Fetching employee with id: {}", id);
+
         return ResponseEntity.ok(employeeService.getEmployeeById(id));
     }
 
-    // PUT /api/employees/{id} — full update (all fields required)
-    @PutMapping("/update{id}")
-    public ResponseEntity<EmployeeResponseDto> updateEmployee(@PathVariable Long id,
-                                                              @Valid @RequestBody EmployeeRequestDto dto) {
+    // ── FULL UPDATE (PUT) ────────────────────────────────────────────
+
+    @PutMapping("/{id}")
+    public ResponseEntity<EmployeeResponseDto> updateEmployee(
+            @PathVariable Long id,
+            @Valid @RequestBody EmployeeRequestDto dto) {
+
+        log.info("Updating employee with id: {}", id);
+
         return ResponseEntity.ok(employeeService.updateEmployee(id, dto));
     }
 
-    // PATCH /api/employees/{id} — partial update (only send fields you want to change)
-    @PatchMapping("/patch{id}")
-    public ResponseEntity<EmployeeResponseDto> patchEmployee(@PathVariable Long id,
-                                                             @RequestBody EmployeePatchDto dto) {
+    // ── PARTIAL UPDATE (PATCH) ───────────────────────────────────────
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<EmployeeResponseDto> patchEmployee(
+            @PathVariable Long id,
+            @RequestBody EmployeePatchDto dto) {
+
+        log.info("Patching employee with id: {}", id);
+
         return ResponseEntity.ok(employeeService.patchEmployee(id, dto));
     }
 
-    // DELETE /api/employees/{id}
-    @DeleteMapping("/delete{id}")
-    public ResponseEntity<String> deleteEmployee(@PathVariable Long id) {
+    // ── DELETE ───────────────────────────────────────────────────────
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteEmployee(
+            @PathVariable Long id) {
+
+        log.info("Deleting employee with id: {}", id);
+
         employeeService.deleteEmployee(id);
-        return ResponseEntity.ok("Employee deleted successfully");
+
+        return ResponseEntity.noContent().build();
     }
 }

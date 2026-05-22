@@ -1,4 +1,5 @@
 package com.example.hrm.system.dtos.requestdto;
+import com.example.hrm.system.emums.EmployeeStatus;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -10,7 +11,7 @@ public class EmployeePatchDto {
     private String email;
     private String phone;
     private LocalDate hireDate;
-    private String status;
+    private EmployeeStatus status;
 
     // IDs for FK fields — null means don't update
     private Long departmentId;
