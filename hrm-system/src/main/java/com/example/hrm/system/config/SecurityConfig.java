@@ -1,6 +1,6 @@
 package com.example.hrm.system.config;
 
-import com.example.hrm.system.security.CustomUserDetailsService;  // ✅ SERVICE not entity
+import com.example.hrm.system.security.CustomUserDetailsService;
 import com.example.hrm.system.security.JwtAuthenticationFilter;
 import com.example.hrm.system.security.JwtUtil;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +11,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,7 +22,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // ✅ Bug 1 fixed — inject SERVICE not entity class
     private final CustomUserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
 
@@ -43,8 +43,8 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-
-    @Bean
+    // ✅ FIX 1 — @Bean annotation REMOVED to fix AuthenticationProvider conflict warning.
+    //    Method is still used internally by securityFilterChain below.
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
@@ -52,7 +52,7 @@ public class SecurityConfig {
         return provider;
     }
 
-    //  AuthenticationManager for login
+    // ✅ AuthenticationManager for login
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config) throws Exception {
@@ -63,10 +63,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http)
             throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configure(http))   // ✅ CORS line add ki
+                .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sess -> sess
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider())  // ✅ register provider
+                .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
 
                         // ── PUBLIC ────────────────────────────────────────────
@@ -76,8 +77,6 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
-
-                        // ── EMPLOYEE ──────────────────────────────────────────
                         // ── EMPLOYEE ──────────────────────────────────────────
                         .requestMatchers(HttpMethod.POST,
                                 "/api/v1/employees/**").hasAnyRole("ADMIN", "HR")
@@ -97,8 +96,9 @@ public class SecurityConfig {
                                 "/api/leaves/pending").hasAnyRole("ADMIN", "HR", "MANAGER")
                         .requestMatchers(HttpMethod.GET,
                                 "/api/leaves/**").hasAnyRole("ADMIN", "HR", "MANAGER", "EMPLOYEE")
+                        // ✅ FIX 2 — EMPLOYEE removed from PUT (approve/reject should not be done by EMPLOYEE)
                         .requestMatchers(HttpMethod.PUT,
-                                "/api/leaves/**").hasAnyRole("ADMIN", "HR", "MANAGER", "EMPLOYEE")
+                                "/api/leaves/**").hasAnyRole("ADMIN", "HR", "MANAGER")
 
                         // ── DEPARTMENT ────────────────────────────────────────
                         .requestMatchers(HttpMethod.POST,

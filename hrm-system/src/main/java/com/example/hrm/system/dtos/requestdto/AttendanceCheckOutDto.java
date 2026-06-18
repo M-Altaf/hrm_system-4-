@@ -12,8 +12,6 @@ public class AttendanceCheckOutDto {
     @NotNull(message = "Employee ID is required")
     private Long employeeId;
 
-    @NotNull(message = "Check out time is required")
-    @JsonFormat(pattern = "HH:mm:ss")
+    @NotNull(message = "Check-out time is required")
     private LocalTime checkOut;
-
 }
