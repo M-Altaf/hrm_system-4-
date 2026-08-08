@@ -5,7 +5,7 @@ import com.example.hrm.system.dtos.requestdto.EmployeeRequestDto;
 import com.example.hrm.system.dtos.responsedto.EmployeeResponseDto;
 import com.example.hrm.system.emums.EmployeeStatus;
 import com.example.hrm.system.entity.Employee;
-import com.example.hrm.system.exeption.ResourceNotFoundException;
+import com.example.hrm.system.exception.ResourceNotFoundException;
 import com.example.hrm.system.repository.*;
 import com.example.hrm.system.services.EmployeeService;
 import lombok.RequiredArgsConstructor;
@@ -162,6 +162,54 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.deleteById(id);
     }
 
+    @Transactional
+    @Override
+    public void uploadProfilePicture(Long id, byte[] imageBytes, String contentType) {
+        log.info("Uploading profile picture for employee id: {}", id);
+
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
+
+        if (imageBytes == null || imageBytes.length == 0) {
+            throw new IllegalArgumentException("Uploaded file is empty");
+        }
+        if (imageBytes.length > 2 * 1024 * 1024) {
+            throw new IllegalArgumentException("Profile picture must be under 2MB");
+        }
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("File must be an image (jpg, png, etc.)");
+        }
+
+        employee.setProfilePicture(imageBytes);
+        employee.setProfilePictureType(contentType);
+        employeeRepository.save(employee);
+
+        log.info("Profile picture uploaded successfully for employee id: {}", id);
+    }
+
+// ── PROFILE PICTURE: FETCH RAW BYTES ─────────────────────────────
+
+    @Transactional(readOnly = true)
+    @Override
+    public Employee getEmployeeWithPicture(Long id) {
+        log.debug("Fetching profile picture for employee id: {}", id);
+        return employeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
+    }
+
+// ── PROFILE PICTURE: DELETE ──────────────────────────────────────
+
+    @Transactional
+    @Override
+    public void deleteProfilePicture(Long id) {
+        log.info("Deleting profile picture for employee id: {}", id);
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
+        employee.setProfilePicture(null);
+        employee.setProfilePictureType(null);
+        employeeRepository.save(employee);
+    }
+
     // ── MAPPER: DTO → ENTITY ─────────────────────────────────────────
 
     private Employee mapToEntity(EmployeeRequestDto dto) {
@@ -189,7 +237,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     // ── MAPPER: ENTITY → DTO ─────────────────────────────────────────
-
     private EmployeeResponseDto mapToDto(Employee e) {
         EmployeeResponseDto dto = new EmployeeResponseDto();
         dto.setId(e.getId());
@@ -199,6 +246,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         dto.setPhone(e.getPhone());
         dto.setHireDate(e.getHireDate());
         dto.setStatus(e.getStatus() != null ? EmployeeStatus.valueOf(e.getStatus().name()) : null);
+        dto.setHasProfilePicture(e.getProfilePicture() != null && e.getProfilePicture().length > 0);
 
         dto.setDepartmentId(e.getDepartment().getId());
         dto.setDepartmentName(e.getDepartment().getName());

@@ -1,15 +1,20 @@
 package com.example.hrm.system.serviceImpl;
+
 import com.example.hrm.system.dtos.requestdto.SignupRequestDto;
+import com.example.hrm.system.dtos.responsedto.UserResponseDto;
 import com.example.hrm.system.entity.Role;
 import com.example.hrm.system.entity.User;
-import com.example.hrm.system.exeption.ResourceNotFoundException;
+import com.example.hrm.system.exception.ResourceNotFoundException;
 import com.example.hrm.system.repository.RoleRepository;
 import com.example.hrm.system.repository.UserRepository;
 import com.example.hrm.system.services.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -28,22 +33,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User registerUser(SignupRequestDto dto) {
-
-        //  duplicate username check
         if (userRepository.existsByUsername(dto.getUsername())) {
             throw new RuntimeException("Username already exists");
         }
-
-        //  duplicate email check
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
-
-        //  get role from DB
         Role role = roleRepository.findByName(dto.getRole())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Role not found: " + dto.getRole()));
-        //  create user
         User user = new User();
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
@@ -52,5 +50,18 @@ public class UserServiceImpl implements UserService {
         user.setEnabled(true);
         user.setCreateAt(LocalDateTime.now());
         return userRepository.save(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserResponseDto> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(u -> new UserResponseDto(
+                        u.getId(),
+                        u.getUsername(),
+                        u.getEmail(),
+                        u.getRole().getName()
+                ))
+                .collect(Collectors.toList());
     }
 }

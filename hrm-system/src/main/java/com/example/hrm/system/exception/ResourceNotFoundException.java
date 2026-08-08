@@ -1,4 +1,4 @@
-package com.example.hrm.system.exeption;
+package com.example.hrm.system.exception;
 
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String message) {

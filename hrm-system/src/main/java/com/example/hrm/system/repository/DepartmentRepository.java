@@ -1,7 +1,6 @@
 package com.example.hrm.system.repository;
 
 import com.example.hrm.system.entity.Department;
-import com.example.hrm.system.entity.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

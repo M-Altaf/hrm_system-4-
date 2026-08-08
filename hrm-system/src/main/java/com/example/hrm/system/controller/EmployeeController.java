@@ -3,19 +3,23 @@ package com.example.hrm.system.controller;
 import com.example.hrm.system.dtos.requestdto.EmployeeRequestDto;
 import com.example.hrm.system.dtos.requestdto.EmployeePatchDto;
 import com.example.hrm.system.dtos.responsedto.EmployeeResponseDto;
+import com.example.hrm.system.entity.Employee;
 import com.example.hrm.system.services.EmployeeService;
+import io.jsonwebtoken.io.IOException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/employees")
+@RequestMapping("/api/employees")
 @RequiredArgsConstructor
 public class EmployeeController {
 
@@ -23,7 +27,7 @@ public class EmployeeController {
 
     // ── CREATE ───────────────────────────────────────────────────────
 
-    @PostMapping
+    @PostMapping("/create_emp")
     public ResponseEntity<EmployeeResponseDto> createEmployee(
             @Valid @RequestBody EmployeeRequestDto dto) {
 
@@ -39,7 +43,7 @@ public class EmployeeController {
 
     // ── GET ALL ──────────────────────────────────────────────────────
 
-    @GetMapping
+    @GetMapping("/getall")
     public ResponseEntity<List<EmployeeResponseDto>> getAllEmployees() {
 
         log.info("Fetching all employees");
@@ -92,6 +96,35 @@ public class EmployeeController {
 
         employeeService.deleteEmployee(id);
 
+        return ResponseEntity.noContent().build();
+    }
+    @PostMapping("/{id}/profile-picture")
+    public ResponseEntity<Void> uploadProfilePicture(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) throws IOException, java.io.IOException {
+
+        log.info("Profile picture upload request for employee id: {}", id);
+        employeeService.uploadProfilePicture(id, file.getBytes(), file.getContentType());
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}/profile-picture")
+    public ResponseEntity<byte[]> getProfilePicture(@PathVariable Long id) {
+        Employee employee = employeeService.getEmployeeWithPicture(id);
+
+        if (employee.getProfilePicture() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(employee.getProfilePictureType()))
+                .body(employee.getProfilePicture());
+    }
+
+    @DeleteMapping("/{id}/profile-picture")
+    public ResponseEntity<Void> deleteProfilePicture(@PathVariable Long id) {
+        log.info("Profile picture delete request for employee id: {}", id);
+        employeeService.deleteProfilePicture(id);
         return ResponseEntity.noContent().build();
     }
 }

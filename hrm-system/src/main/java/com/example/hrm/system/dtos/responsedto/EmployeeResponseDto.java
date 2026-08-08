@@ -22,4 +22,5 @@ public class EmployeeResponseDto{
     private String categoryName;
     private Long userId;
     private String username;
+    private boolean hasProfilePicture;
 }

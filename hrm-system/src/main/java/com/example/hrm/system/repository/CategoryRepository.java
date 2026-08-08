@@ -1,5 +1,7 @@
 package com.example.hrm.system.repository;
 
+
+
 import com.example.hrm.system.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

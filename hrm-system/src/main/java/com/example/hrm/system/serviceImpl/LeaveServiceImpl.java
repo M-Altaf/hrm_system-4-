@@ -12,7 +12,7 @@ import com.example.hrm.system.emums.LeaveStatus;
 import com.example.hrm.system.entity.Employee;
 import com.example.hrm.system.entity.Leave;
 import com.example.hrm.system.entity.User;
-import com.example.hrm.system.exeption.ResourceNotFoundException;
+import com.example.hrm.system.exception.ResourceNotFoundException;
 import com.example.hrm.system.repository.EmployeeRepository;
 import com.example.hrm.system.repository.LeaveRepository;
 import com.example.hrm.system.repository.UserRepository;

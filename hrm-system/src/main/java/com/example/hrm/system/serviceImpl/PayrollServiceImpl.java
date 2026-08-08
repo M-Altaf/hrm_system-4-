@@ -7,7 +7,7 @@ import com.example.hrm.system.dtos.updatedto.PayrollBulkRequestDto;
 import com.example.hrm.system.emums.PaymentStatus;
 import com.example.hrm.system.entity.Employee;
 import com.example.hrm.system.entity.Payroll;
-import com.example.hrm.system.exeption.ResourceNotFoundException;
+import com.example.hrm.system.exception.ResourceNotFoundException;
 import com.example.hrm.system.repository.EmployeeRepository;
 import com.example.hrm.system.repository.PayrollRepository;
 import com.example.hrm.system.services.AttendanceService;

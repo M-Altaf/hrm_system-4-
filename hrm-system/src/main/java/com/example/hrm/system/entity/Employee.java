@@ -1,16 +1,16 @@
 package com.example.hrm.system.entity;
 
-
 import com.example.hrm.system.emums.EmployeeStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
-import java.time.LocalDate;
-import java.util.List;
-import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -49,7 +49,6 @@ public class Employee {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Reverse mappings — JsonIgnore prevents serialization issues
     @JsonIgnore
     @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Address address;
@@ -69,4 +68,12 @@ public class Employee {
     @JsonIgnore
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Notification> notifications;
+
+    @JdbcTypeCode(SqlTypes.VARBINARY)
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "profile_picture", columnDefinition = "bytea")
+    private byte[] profilePicture;
+
+    @Column(name = "profile_picture_type", length = 50)
+    private String profilePictureType;
 }

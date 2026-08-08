@@ -4,6 +4,7 @@ import com.example.hrm.system.dtos.requestdto.LoginRequestDto;
 import com.example.hrm.system.dtos.requestdto.SignupRequestDto;
 import com.example.hrm.system.dtos.responsedto.LoginResponseDto;
 import com.example.hrm.system.dtos.responsedto.SignupResponseDto;
+import com.example.hrm.system.dtos.responsedto.UserResponseDto;
 import com.example.hrm.system.entity.User;
 import com.example.hrm.system.security.CustomUserDetails;
 import com.example.hrm.system.security.JwtUtil;
@@ -15,6 +16,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -95,5 +99,9 @@ public class AuthController {
 
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
+    }
+    @GetMapping("/users")
+    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 }

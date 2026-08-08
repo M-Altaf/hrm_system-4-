@@ -70,6 +70,9 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
 
+
+                        // ── AUTH (specific rule BEFORE the wildcard) ─────────
+                        .requestMatchers(HttpMethod.GET, "/api/auth/users").hasRole("ADMIN")
                         // ── PUBLIC ────────────────────────────────────────────
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(
@@ -79,15 +82,15 @@ public class SecurityConfig {
                         ).permitAll()
                         // ── EMPLOYEE ──────────────────────────────────────────
                         .requestMatchers(HttpMethod.POST,
-                                "/api/v1/employees/**").hasAnyRole("ADMIN", "HR")
+                                "/api/employees/**").hasAnyRole("ADMIN", "HR")
                         .requestMatchers(HttpMethod.PUT,
-                                "/api/v1/employees/**").hasAnyRole("ADMIN", "HR")
+                                "/api/employees/**").hasAnyRole("ADMIN", "HR")
                         .requestMatchers(HttpMethod.PATCH,
-                                "/api/v1/employees/**").hasAnyRole("ADMIN", "HR", "MANAGER")
+                                "/api/employees/**").hasAnyRole("ADMIN", "HR", "MANAGER")
                         .requestMatchers(HttpMethod.DELETE,
-                                "/api/v1/employees/**").hasRole("ADMIN")
+                                "/api/employees/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET,
-                                "/api/v1/employees/**").hasAnyRole("ADMIN", "HR", "MANAGER", "EMPLOYEE")
+                                "/api/employees/**").hasAnyRole("ADMIN", "HR", "MANAGER", "EMPLOYEE")
 
                         // ── LEAVE ─────────────────────────────────────────────
                         .requestMatchers(HttpMethod.POST,
